@@ -54,6 +54,8 @@ func (f *fileData) InitIPData(url string, path string, size int) (rs interface{}
 			if err = decrypt(); err != nil {
 				rs = err
 				return
+			}else{
+				_ = os.Remove("encrypted.tmp")
 			}
 		}
 		log.Printf("已将 %s 保存到本地", path)
@@ -91,6 +93,19 @@ func (wc writeCounter) printProgress() {
 }
 
 func downloadFile(filepath string, url string, size int) error {
+	err := download(filepath, url, size)
+	if err != nil {
+		return err
+	}
+	err = os.Rename(filepath+".tmp", filepath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func download(filepath string, url string, size int) error {
 	out, err := os.Create(filepath + ".tmp")
 	if err != nil {
 		return err
@@ -108,14 +123,7 @@ func downloadFile(filepath string, url string, size int) error {
 	if err != nil {
 		return err
 	}
-
 	fmt.Print("\n")
-
-	err = os.Rename(filepath+".tmp", filepath)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -146,7 +154,7 @@ func decrypt() error {
 			}
 
 			if err := ioutil.WriteFile("ipv4.dat", Data, 0644); err == nil {
-				_ = os.Remove("encrypted.tmp")
+				// _ = os.Remove("encrypted.tmp")
 			}
 		}
 	}
