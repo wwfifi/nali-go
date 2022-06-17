@@ -153,8 +153,9 @@ func decrypt() error {
 				return err
 			}
 
-			if err := ioutil.WriteFile("ipv4.dat", Data, 0644); err == nil {
+			if err := ioutil.WriteFile("ipv4.dat", Data, 0644); err != nil {
 				// _ = os.Remove("encrypted.tmp")
+				return err
 			}
 		}
 	}
