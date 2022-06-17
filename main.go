@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -61,7 +62,7 @@ func main() {
 
 		for i := range args {
 			item := args[i]
-			if strings.Contains(item, os.Args[0]) == false {
+			if !strings.Contains(item, os.Args[0]) {
 				fmt.Println(Analyse(item))
 			}
 		}
@@ -94,6 +95,15 @@ func main() {
 
 // Analyse IP Source / GeoIP
 func Analyse(item string) string {
+	sysType := runtime.GOOS
+	var esc, color_c, color_e string
+	if (sysType == "windows") {
+		esc = "\033"
+	}else{
+		esc = "\x1b"
+	}
+	color_c = esc + "[0;0;36m["
+	color_e = "]" + esc + "[0m"
 	// ipv4, https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses/17871737#17871737
 	re4 := regexp.MustCompile(`((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])`)
 	if ip := re4.FindStringSubmatch(item); len(ip) != 0 {
@@ -104,7 +114,7 @@ func Analyse(item string) string {
 			}
 		}
 		res := v4db.findv4(ip[0])
-		result := ip[0] + " " + "\x1b[0;0;36m[" + res.Country + res.Area + "]\x1b[0m"
+		result := ip[0] + " " + "\x1b[0;0;36m[" + res.Country + res.Area + color_e
 		return strings.ReplaceAll(item, ip[0], result)
 	}
 
@@ -118,7 +128,7 @@ func Analyse(item string) string {
 			}
 		}
 		res := v6db.findv6(ip[0])
-		result := res.IP + " " + "\x1b[0;0;36m[" + res.Country + res.Area + "]\x1b[0m"
+		result := res.IP + " " + color_c + res.Country + res.Area + "]\x1b[0m"
 		return strings.ReplaceAll(item, ip[0], result)
 	}
 	return item
